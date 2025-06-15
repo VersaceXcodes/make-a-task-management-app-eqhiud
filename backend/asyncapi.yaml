@@ -1,0 +1,174 @@
+asyncapi: 2.0.0
+info:
+  title: TaskFlow Realtime API
+  version: 1.0.0
+  description: >
+    AsyncAPI specification for the realtime events in the TaskFlow task
+    management application. This document defines the websocket events used for
+    realtime updates such as task status updates, task creation, notification
+    reception, and task deletion.
+servers:
+  development:
+    url: localhost:3000
+    protocol: ws
+    description: Development WebSocket server for realtime updates
+channels:
+  task_status_updated:
+    description: Event emitted when a task's status or order_index is updated.
+    subscribe:
+      operationId: on_task_status_updated
+      summary: Receives updates when a task's status or order index changes.
+      message:
+        $ref: "#/components/messages/taskStatusUpdated"
+  task_created:
+    description: Event emitted upon successful creation of a new task.
+    subscribe:
+      operationId: on_task_created
+      summary: Receives new task creation events.
+      message:
+        $ref: "#/components/messages/taskCreated"
+  notification_received:
+    description: Event emitted when a new in-app notification is generated.
+    subscribe:
+      operationId: on_notification_received
+      summary: Receives realtime notification events.
+      message:
+        $ref: "#/components/messages/notificationReceived"
+  task_deleted:
+    description: Event emitted when a task is deleted.
+    subscribe:
+      operationId: on_task_deleted
+      summary: Receives notifications for deleted tasks.
+      message:
+        $ref: "#/components/messages/taskDeleted"
+components:
+  messages:
+    taskStatusUpdated:
+      name: task_status_updated
+      title: Task Status Updated Message
+      payload:
+        type: object
+        required:
+          - task_uid
+          - status
+          - order_index
+          - updated_at
+        properties:
+          task_uid:
+            type: string
+            description: Unique identifier of the task.
+          status:
+            type: string
+            description: Current status of the task (e.g., "to_do", "in_progress",
+              "completed").
+          order_index:
+            type: number
+            description: Custom order index for the task in its view.
+          updated_at:
+            type: string
+            description: ISO timestamp indicating when the task was last updated.
+    taskCreated:
+      name: task_created
+      title: Task Created Message
+      payload:
+        type: object
+        required:
+          - task
+        properties:
+          task:
+            type: object
+            required:
+              - uid
+              - title
+              - description
+              - due_date
+              - priority
+              - status
+              - project_uid
+              - created_at
+              - updated_at
+            properties:
+              uid:
+                type: string
+                description: Unique identifier of the new task.
+              title:
+                type: string
+                description: Title of the task.
+              description:
+                type: string
+                description: Detailed description of the task.
+              due_date:
+                type: string
+                description: Due date of the task in ISO 8601 format.
+              priority:
+                type: string
+                enum:
+                  - low
+                  - medium
+                  - high
+                description: Priority level of the task.
+              status:
+                type: string
+                description: Current status of the task (e.g., "to_do", "in_progress",
+                  "completed").
+              project_uid:
+                type: string
+                description: Identifier of the associated project, if any.
+              created_at:
+                type: string
+                description: ISO timestamp when the task was created.
+              updated_at:
+                type: string
+                description: ISO timestamp when the task was last updated.
+    notificationReceived:
+      name: notification_received
+      title: Notification Received Message
+      payload:
+        type: object
+        required:
+          - notification
+        properties:
+          notification:
+            type: object
+            required:
+              - uid
+              - message
+              - read_status
+              - created_at
+            properties:
+              uid:
+                type: string
+                description: Unique identifier of the notification.
+              message:
+                type: string
+                description: Text content of the notification.
+              type:
+                type: string
+                description: Category or type of the notification.
+              related_task_uid:
+                type: string
+                description: Associated task identifier, if applicable.
+              related_project_uid:
+                type: string
+                description: Associated project identifier, if applicable.
+              read_status:
+                type: boolean
+                description: Flag indicating whether the notification has been read.
+              created_at:
+                type: string
+                description: ISO timestamp when the notification was issued.
+    taskDeleted:
+      name: task_deleted
+      title: Task Deleted Message
+      payload:
+        type: object
+        required:
+          - task_uid
+          - deleted_at
+        properties:
+          task_uid:
+            type: string
+            description: Unique identifier of the deleted task.
+          deleted_at:
+            type: string
+            description: ISO timestamp indicating when the task was deleted.
